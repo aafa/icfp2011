@@ -1,2 +1,3 @@
 #!/bin/sh
-runhaskell ./src/Main.hs $1
+#runhaskell ./src/Main.hs $1
+./prog $1

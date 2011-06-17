@@ -6,4 +6,5 @@ executable icfpc-ltg
   hs-source-dirs:  src
   main-is:         Main.hs
   ghc-options:     -O2
+  other-modules:   Helpers
 
