@@ -10,23 +10,24 @@ cards = ["I", "zero", "succ", "dbl", "get",
          "help", "copy", "revive", "zombie"
         ]
 
-growSlotUpTo host n = let h = show host in [(right, "zero", h), (left, "succ", h)] ++ times [(left, "dbl", h)] n
+makeElephant host n = let h = show host in [(right, "zero", h), (left, "succ", h)] ++ times [(left, "dbl", h)] n ++ times [(left, "succ", h)] 1807
 
 -- take number from slot #1
 -- makeHelp target hero -- is a generic
 
-clean host = [(left, "put", host)]
-generateValueNumber host n = let h = show host in [(right, "zero", h)] ++ times [(left, "succ", h)] n
+clean host = let h = show host in [(left, "put", h)]
+incValueNumber host n = let h = show host in [(right, "zero", h)] ++ times [(left, "succ", h)] n
 operationTarget target host = let h = show host in times [(left, "K", h), (left, "S", h), (right, "succ", h)] target
 
-make operation target hero host = let h = show host in generateValueNumber host hero ++[(left, operation, h)] ++ operationTarget target host ++ [(right, "zero", h)]
+make operation target hero host = let h = show host in incValueNumber host hero ++[(left, operation, h)] ++ operationTarget target host ++ [(right, "zero", h)]
 addThirdParam host = let h = show host in [(left, "K", h), (left, "S", h), (right, "get", h), (left, "K", h), (left, "S", h), (right, "succ", h), (right, "zero", h)]
 
-simpleAttack =  make "attack" 0 1 0 ++ addThirdParam 0
+simpleAttackOn target hero =  make "attack" target hero 0 ++ addThirdParam 0
 simpleHeal = make "help" 1 1 0 ++ addThirdParam 0
-elephant = growSlotUpTo 1 10
+strike n host target = let h = show host in times ([(right, "zero", h)] ++ times [(left, "succ", h)] target ++ [(left, "dec", h)]) n 
 
-testExample = elephant ++  simpleAttack
+fastAttack = attack 0 where attack n = simpleAttackOn n (n+2) ++ strike 1001 0 n ++ attack (n + 1)
+testExample = makeElephant 1 13  ++ fastAttack
 
 opponentsTurn = do
         app <- getLine
