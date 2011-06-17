@@ -1,6 +1,5 @@
 module Main where
 import System( getArgs )
-import Control.Concurrent
 import IO
 import Helpers
 
@@ -11,19 +10,31 @@ cards = ["I", "zero", "succ", "dbl", "get",
          "help", "copy", "revive", "zombie"
         ]
 
-growSlotUpTo slot n = [(right, "zero", slot), (left, "succ", slot)] ++ times (left, "dbl", slot) n
+growSlotUpTo host n = let h = show host in [(right, "zero", h), (left, "succ", h)] ++ times [(left, "dbl", h)] n
 
-next [] = []
-next (x:xs) = x : next xs
-getNext a = head (next a)
+-- take number from slot #1
+-- makeHelp target hero -- is a generic
+
+clean host = [(left, "put", host)]
+generateValueNumber host n = let h = show host in [(right, "zero", h)] ++ times [(left, "succ", h)] n
+operationTarget target host = let h = show host in times [(left, "K", h), (left, "S", h), (right, "succ", h)] target
+
+make operation target hero host = let h = show host in generateValueNumber host hero ++[(left, operation, h)] ++ operationTarget target host ++ [(right, "zero", h)]
+addThirdParam host = let h = show host in [(left, "K", h), (left, "S", h), (right, "get", h), (left, "K", h), (left, "S", h), (right, "succ", h), (right, "zero", h)]
+
+simpleAttack =  make "attack" 0 1 0 ++ addThirdParam 0
+simpleHeal = make "help" 1 1 0 ++ addThirdParam 0
+elephant = growSlotUpTo 1 10
+
+testExample = elephant ++  simpleAttack
 
 opponentsTurn = do
         app <- getLine
-        if app == "1" then do
+        if app == left then do
                 card <- getLine
                 slot <- getLine
                 return (app, card, slot)
-                else if app == "2" then do
+                else if app == right then do
                 slot <- getLine
                 card <- getLine
                 return (app, card, slot)
@@ -44,7 +55,7 @@ myTurn a = do
         opponentsTurn 
         myTurn (tail (a))
          
-testTurn  = myTurn (growSlotUpTo "1" 10)
+testTurn  = myTurn testExample
 
 start "1" = opponentsTurn
 start _ = return (left, "I", "0") -- refactor this
