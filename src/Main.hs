@@ -10,24 +10,40 @@ cards = ["I", "zero", "succ", "dbl", "get",
          "help", "copy", "revive", "zombie"
         ]
 
-makeElephant host n = let h = show host in [(right, "zero", h), (left, "succ", h)] ++ times [(left, "dbl", h)] n ++ times [(left, "succ", h)] 1807
+-- 10000 int function
+makeElephant host = let h = show host in [(right, "zero", h)] ++ times [(left, "succ", h)] 39 ++ times [(left, "dbl", h)] 8 ++ times [(left, "succ", h)] 16
+
+-- 11112 int function
+makeKiller host inBetween = let h = show host in [(right, "zero", h)] ++ times [(left, "succ", h)] 5 ++ times [(left, "dbl", h)] 8 ++ inBetween ++ times [(left, "succ", h)] 109 ++ times [(left, "dbl", h)] 3
+
+makeHelper host = let h = show host in [(right, "zero", h)] ++ times [(left, "succ", h)] 1 ++ times [(left, "dbl", h)] 11
 
 -- take number from slot #1
 -- makeHelp target hero -- is a generic
 
+noop = return (left, "I", "0")
 clean host = let h = show host in [(left, "put", h)]
-incValueNumber host n = let h = show host in [(right, "zero", h)] ++ times [(left, "succ", h)] n
-operationTarget target host = let h = show host in times [(left, "K", h), (left, "S", h), (right, "succ", h)] target
+incValueNumber h n = [(right, "zero", h)] ++ times [(left, "succ", h)] n
+operationTarget target h = times [(left, "K", h), (left, "S", h), (right, "succ", h)] target
 
-make operation target hero host = let h = show host in incValueNumber host hero ++[(left, operation, h)] ++ operationTarget target host ++ [(right, "zero", h)]
+-- combos
+make operation target hero host = let h = show host in incValueNumber h hero ++[(left, operation, h)] ++ operationTarget target h ++ [(right, "zero", h)]
 addThirdParam host = let h = show host in [(left, "K", h), (left, "S", h), (right, "get", h), (left, "K", h), (left, "S", h), (right, "succ", h), (right, "zero", h)]
-
 simpleAttackOn target hero =  make "attack" target hero 0 ++ addThirdParam 0
-simpleHeal = make "help" 1 1 0 ++ addThirdParam 0
+simpleHeal target hero = make "help" target hero 0 ++ addThirdParam 0
 strike n host target = let h = show host in times ([(right, "zero", h)] ++ times [(left, "succ", h)] target ++ [(left, "dec", h)]) n 
 
+makeZombie host = let h = show host in [(right, "zero", h), (left, "zombie", h), (left, "K", h) , (left, "S", h), (right, "get", h), (right, "zero", h)]
+makeZombieFunction = make "help" 0 1 0 ++ clean 1 ++ makeElephant 1 ++ [(left, "K", "1"), (left, "K", "0"), (left, "S", "0"), (left, "K", "0"), (left, "S", "0"), (right, "get", "0"), (left, "K", "0"), (left, "S", "0"), (right, "succ", "0"), (right, "zero", "0")]
+
+-- macro combos
+-- 1Kill  (158 turns)
+firstKill = makeKiller 1 (simpleHeal 2 3) ++ simpleAttackOn 0 2
+
+-- stratages
 fastAttack = attack 0 where attack n = simpleAttackOn n (n+2) ++ strike 1001 0 n ++ attack (n + 1)
-testExample = makeElephant 1 13  ++ fastAttack
+
+testExample = firstKill ++ makeZombieFunction ++ clean 1 ++ makeZombie 1 ++ noop
 
 opponentsTurn = do
         app <- getLine
