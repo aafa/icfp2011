@@ -1,0 +1,7 @@
+rm -rf pack
+mkdir pack
+cp -r src/ pack/
+cp install pack/
+cp run pack/
+cp prog pack/
+tar -zcvf aafa-icfpc2011.tar.gz pack/
