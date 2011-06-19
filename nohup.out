@@ -1,0 +1,1 @@
+Check failed: g_shutdown_pipe_write_fd != -1
