@@ -21,10 +21,11 @@ makeHelper host = let h = show host in [(right, "zero", h)] ++ times [(left, "su
 -- take number from slot #1
 -- makeHelp target hero -- is a generic
 
-noop = return (left, "I", "0")
+noop = [(left, "I", "0")]
 clean host = let h = show host in [(left, "put", h)]
 incValueNumber h n = [(right, "zero", h)] ++ times [(left, "succ", h)] n
 operationTarget target h = times [(left, "K", h), (left, "S", h), (right, "succ", h)] target
+copyToBaseFrom n = clean 0 ++ incValueNumber "0" n ++ [(left, "get", "0")]
 
 -- combos
 make operation target hero host = let h = show host in incValueNumber h hero ++[(left, operation, h)] ++ operationTarget target h ++ [(right, "zero", h)]
@@ -34,16 +35,39 @@ simpleHeal target hero = make "help" target hero 0 ++ addThirdParam 0
 strike n host target = let h = show host in times ([(right, "zero", h)] ++ times [(left, "succ", h)] target ++ [(left, "dec", h)]) n 
 
 makeZombie host = let h = show host in [(right, "zero", h), (left, "zombie", h), (left, "K", h) , (left, "S", h), (right, "get", h), (right, "zero", h)]
-makeZombieFunction = make "help" 0 1 0 ++ clean 1 ++ makeElephant 1 ++ [(left, "K", "1"), (left, "K", "0"), (left, "S", "0"), (left, "K", "0"), (left, "S", "0"), (right, "get", "0"), (left, "K", "0"), (left, "S", "0"), (right, "succ", "0"), (right, "zero", "0")]
+updateZF = [(left, "K", "0"), (left, "S", "0"), (left, "K", "0"), (left, "S", "0"), (right, "get", "0"), (left, "K", "0"), (left, "S", "0"), (right, "succ", "0"), (right, "zero", "0")]
+makeZF = clean 1 ++ makeElephant 1 ++ [(left, "K", "1")]
+
+makeFastZF = helpTemplate 5 ++ copyToBaseFrom 5
+
+-- template to make fast "help" to opponent
+g3 h = incValueNumber "0" 3 ++ [(left, "K", "0")] ++ [(right, "get", h), (left, "K", h), (left, "S", h), (left, "K", h), (left, "S", h), (right, "get", h), (right, "zero", h)]
+operationFold op host = let h = show host in [(right, op, h),(left, "K", h),(left, "S", h),(left, "K", h),(left, "S", h), (right, "get", h),(right, "zero", h)]
+finalFolding h = [(left, "S", h), (left, "K", h), (left, "S", h), (right, "get", h), (right, "zero", h)] 
+ng3 host = let h = show host in g3 h ++ copyToBaseFrom host ++ clean host ++ operationFold "succ" host
+formTemplatePart host func = ng3 host ++ func ++ copyToBaseFrom host ++ clean host
+helpTemplate host = let h = show host in formTemplatePart (host-1) (operationFold "help" host) ++ finalFolding h
+
+ig3 host = let h = show host in g3 h 
+neutralTemplate host func = ig3 host ++ func ++ copyToBaseFrom host ++ clean host
+makeNeutralTemplate host = let h = show host in neutralTemplate (host-1) (operationFold "help" host) ++ [(left, "S", h), (right, "get", h), (right, "zero", h)] 
+
+-- slot 3 is a counter; 5 is a storage for template
+flushTemplate = copyToBaseFrom 5 ++ [(right, "I", "0")] ++ updateZF
+updateCounter = times [(left, "succ", "3")] 2
+initCounter = [(right, "zero", "3")]
 
 -- macro combos
 -- 1Kill  (158 turns)
 firstKill = makeKiller 1 (simpleHeal 2 3) ++ simpleAttackOn 0 2
+overKill = clean 5 ++ makeNeutralTemplate 5 ++ clean 3 ++ initCounter ++ times [(left, "succ", "3")] 2 ++ flushTemplate ++ makeZombie 2
 
 -- stratages
-fastAttack = attack 0 where attack n = simpleAttackOn n (n+2) ++ strike 1001 0 n ++ attack (n + 1)
+fastAttack = attack 255 where attack n = simpleAttackOn n (n+2) ++ strike 1001 0 n ++ attack (n - 1)
+zombiWaves = concat [flushTemplate ++ updateCounter ++ makeZombie 2 | n <- [1..127]] ++ flushTemplate ++ makeZombie 2  -- ++ overKill -- ++ zombiWaves
+zombiAttack = makeZF ++ helpTemplate 5 ++ initCounter ++ flushTemplate ++ makeZombie 2 ++ zombiWaves
 
-testExample = firstKill ++ makeZombieFunction ++ clean 1 ++ makeZombie 1 ++ noop
+testExample = firstKill ++ zombiAttack ++ noop
 
 opponentsTurn = do
         app <- getLine
