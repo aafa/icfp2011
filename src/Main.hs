@@ -40,7 +40,7 @@ makeZF = clean 1 ++ makeElephant 1 ++ [(left, "K", "1")]
 
 makeFastZF = helpTemplate 5 ++ copyToBaseFrom 5
 
--- template to make fast "help" to opponent
+-- template (n,n+1) to make fast "help" to opponent
 g3 h = incValueNumber "0" 3 ++ [(left, "K", "0")] ++ [(right, "get", h), (left, "K", h), (left, "S", h), (left, "K", h), (left, "S", h), (right, "get", h), (right, "zero", h)]
 operationFold op host = let h = show host in [(right, op, h),(left, "K", h),(left, "S", h),(left, "K", h),(left, "S", h), (right, "get", h),(right, "zero", h)]
 finalFolding h = [(left, "S", h), (left, "K", h), (left, "S", h), (right, "get", h), (right, "zero", h)] 
@@ -48,6 +48,7 @@ ng3 host = let h = show host in g3 h ++ copyToBaseFrom host ++ clean host ++ ope
 formTemplatePart host func = ng3 host ++ func ++ copyToBaseFrom host ++ clean host
 helpTemplate host = let h = show host in formTemplatePart (host-1) (operationFold "help" host) ++ finalFolding h
 
+-- template
 ig3 host = let h = show host in g3 h 
 neutralTemplate host func = ig3 host ++ func ++ copyToBaseFrom host ++ clean host
 makeNeutralTemplate host = let h = show host in neutralTemplate (host-1) (operationFold "help" host) ++ [(left, "S", h), (right, "get", h), (right, "zero", h)] 
@@ -67,7 +68,7 @@ fastAttack = attack 255 where attack n = simpleAttackOn n (n+2) ++ strike 1001 0
 zombiWaves = concat [flushTemplate ++ updateCounter ++ makeZombie 2 | n <- [1..127]] ++ flushTemplate ++ makeZombie 2  -- ++ overKill -- ++ zombiWaves
 zombiAttack = makeZF ++ helpTemplate 5 ++ initCounter ++ flushTemplate ++ makeZombie 2 ++ zombiWaves
 
-testExample = firstKill ++ zombiAttack ++ noop
+testExample = ig3 5 --firstKill ++ zombiAttack ++ noop
 
 opponentsTurn = do
         app <- getLine
