@@ -11,10 +11,10 @@ Main strategy falls down to following steps:
 1. Make a first kill of 255-th opponent's slot using standard attack (takes ~150 turns)
 2. Construct template for help function that takes its args from slot's values (template is expanding by right application of the I function)
 3. Wrap help function to make it suitable for zombie
-4. Send zombie to opponents. Each zombie kills 2 opponent's slot.
+4. Zombify! Each zombie kills 2 opponent's slot.
 5. Do some random stuff to confuse an opponent.
 
-It takes about ~4500 turns to win if opponents does nothing.
+It takes about ~4500 turns to win if opponent does nothing.
 
 p.s.
 Thanks to all organizers for such a great contest!!
