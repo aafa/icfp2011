@@ -1,9 +1,22 @@
-------------------------
---  Blind Zombie Rush --
-------------------------
+--------------------------------
+--  Blind Zombie Rush by aafa --
+--------------------------------
 
-This is realy simple "blind" implementation of the problem. I had a good time solving it.
+This is realy simple "blind" implementation of the problem. The purpose of my participation was to get familiar with Haskell language and functional programing in general, and this experience was valuable.
+
+Engine of this solution is straightforward. It's looping over fixed list of turns, composed from several combos.
+
+Main strategy falls down to following steps:
+
+1. Make a first kill of 255-th opponent's slot using standard attack (takes ~150 turns)
+2. Construct template for help function that takes its args from slot's values (template is expanding by right application of the I function)
+3. Wrap help function to make it suitable for zombie
+4. Send zombie to opponents. Each zombie kills 2 opponent's slot.
+5. Do some random stuff to confuse an opponent.
+
+It takes about ~4500 turns to win if opponents does nothing.
+
+p.s.
 Thanks to all organizers for such a great contest!!
+I had a good time solving it.
 
----
-Alexey Afanasev
